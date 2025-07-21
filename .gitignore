@@ -1,6 +1,23 @@
-.DS_Store
-node_modules
-.git
+# Python virtual environment
 venv/
+__pycache__/
+*.pyc
+
+# Environment variables and secrets
 .env
+.env.*
+
+# Logs and runtime files
+*.log
+agent_memory.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
 
