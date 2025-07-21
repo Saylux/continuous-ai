@@ -18,6 +18,11 @@ def generate_env_file():
         print("Created .env with GEMINI_API_KEY=")
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="CrewAI Autopilot runner")
+    parser.add_argument("command", nargs="?", default="run", choices=["run", "list-models"], help="Command to run: run, list-models")
+    args = parser.parse_args()
+
     generate_env_file()
     venv_dir = "venv"
     is_windows = platform.system() == "Windows"
@@ -42,7 +47,7 @@ def main():
         run([pip_bin, "install", "google-generativeai"])
         run([pip_bin, "install", "python-dotenv"])
         # Re-run this script using the venv Python
-        run([python_bin, os.path.abspath(__file__)])
+        run([python_bin, os.path.abspath(__file__), args.command])
         sys.exit(0)
 
     # 4. Now in venv: load .env if needed
@@ -51,6 +56,10 @@ def main():
 
     if not os.environ.get('OPENAI_API_KEY'):
         os.environ['OPENAI_API_KEY'] = 'dummy'
+
+    if args.command == "list-models":
+        run([python_bin, "list_gemini_models.py"])
+        return
 
     # 5. Run the CrewAI autopilot script
     autopilot_script = os.path.join("agents", "crew_autopilot.py")
