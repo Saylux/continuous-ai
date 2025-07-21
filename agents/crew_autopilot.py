@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import json
 import argparse
 from datetime import datetime
+import google.generativeai as genai
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -115,16 +116,37 @@ def parse_all_tasks(doc_root):
     tasks.append(("UI/UX Engineer", "Recommend gameplay or UX improvements based on analytics"))
     return tasks
 
-# --- LLM Integration Stub ---
+# --- LLM Integration: Gemini Support ---
 def generate_code_with_llm(prompt):
-    # TODO: Integrate with OpenAI or local LLM for code generation
-    logging.info(f"[LLM] Generating code for prompt: {prompt}")
-    return f"# Code generated for: {prompt}\nprint('Hello from LLM!')"
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    if not api_key:
+        log_message(f"[LLM] No GEMINI_API_KEY found. Returning stub code for: {prompt}", level="WARNING")
+        return f"# [LLM STUB] Code generated for: {prompt}\nprint('Hello from LLM stub!')"
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(prompt)
+    return response.text
 
 def review_code_with_llm(code):
-    # TODO: Integrate with LLM for code review
-    logging.info(f"[LLM] Reviewing code: {code[:60]}...")
-    return "# LLM Review: Code looks good!"
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    if not api_key:
+        log_message(f"[LLM] No GEMINI_API_KEY found. Returning stub review.", level="WARNING")
+        return "# [LLM STUB] Review: Code looks fine (stub)."
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(f"Review this code:\n{code}")
+    return response.text
+
+# ---
+# To use Gemini locally:
+# 1. pip install google-generativeai
+# 2. Create a .env file with: GEMINI_API_KEY=your-gemini-api-key-here
+# 3. Make sure .env is in .gitignore
+#
+# For GitHub Actions:
+# - Add GEMINI_API_KEY as a secret in repo settings
+# - In workflow YAML: env: GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+# ---
 
 # --- File/Process Integration ---
 def run_linter(tool, path):
@@ -188,7 +210,12 @@ def agent_behavior(agent, description, input_data=None):
     if agent.role == "Gameplay Engineering":
         if "Implement MVP version" in description:
             code = generate_code_with_llm(description)
-            filename = f"src/{description.split('"')[1].replace(' ', '_').lower()}.lua"
+            parts = description.split('"')
+            if len(parts) > 1:
+                version = parts[1]
+            else:
+                version = "unknown"
+            filename = "src/" + version.replace(' ', '_').lower() + ".lua"
             write_code_file(filename, code)
             return filename  # Pass filename to next agent
     if agent.role == "Code Review":
@@ -232,10 +259,16 @@ def agent_behavior_single(agent, description):
     if agent.role == "Gameplay Engineering":
         if "Implement MVP version" in description:
             code = generate_code_with_llm(description)
-            filename = f"src/{description.split('"')[1].replace(' ', '_').lower()}.lua"
+            parts = description.split('"')
+            if len(parts) > 1:
+                version = parts[1]
+            else:
+                version = "unknown"
+            filename = "src/" + version.replace(' ', '_').lower() + ".lua"
             return write_code_file(filename, code)
     if agent.role == "UI/UX Design":
         if "Roact" in description or "UX" in description:
+            # No split or f-string with backslash here, just use LLM
             return generate_code_with_llm(description)
     if agent.role == "DevOps":
         if "CI/CD" in description or "pipeline" in description:
@@ -299,8 +332,16 @@ AGENT_ROLES = [
 # --- Create Agents ---
 def create_agents():
     agents = {}
+    api_key = os.getenv("OPENAI_API_KEY", "dummy")
     for name, role, goal in AGENT_ROLES:
-        agents[name] = Agent(name=name, role=role, goal=goal)
+        backstory = f"{name} is an expert in {role} for the Roblox Family Feud project."
+        agents[name] = Agent(
+            name=name,
+            role=role,
+            goal=goal,
+            backstory=backstory,
+            openai_api_key=api_key
+        )
     return agents
 
 # --- Main Orchestration (with argparse for status/reset) ---

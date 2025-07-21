@@ -27,11 +27,24 @@ def main():
         python_bin = os.path.join(venv_dir, "bin", "python")
         pip_bin = os.path.join(venv_dir, "bin", "pip")
 
-    # 3. Upgrade pip and install requirements
-    run([python_bin, "-m", "pip", "install", "--upgrade", "pip"])
-    run([pip_bin, "install", "-r", "requirements.txt"])
+    # 3. If not already running in venv, re-invoke self in venv
+    if os.path.abspath(sys.executable) != os.path.abspath(python_bin):
+        run([pip_bin, "install", "--upgrade", "pip"])
+        run([pip_bin, "install", "-r", "requirements.txt"])
+        run([pip_bin, "install", "google-generativeai"])
+        run([pip_bin, "install", "python-dotenv"])
+        # Re-run this script using the venv Python
+        run([python_bin, os.path.abspath(__file__)])
+        sys.exit(0)
 
-    # 4. Run the CrewAI autopilot script
+    # 4. Now in venv: load .env if needed
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    if not os.environ.get('OPENAI_API_KEY'):
+        os.environ['OPENAI_API_KEY'] = 'dummy'
+
+    # 5. Run the CrewAI autopilot script
     autopilot_script = os.path.join("agents", "crew_autopilot.py")
     run([python_bin, autopilot_script])
 
