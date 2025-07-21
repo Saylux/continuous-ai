@@ -136,3 +136,292 @@
 [2025-07-21 15:36:26] [INFO] [Deploy] (Stub) Deployed src/car.lua to Roblox.
 [2025-07-21 15:36:26] [INFO] [DevOps] Deployed src/car.lua (stub)
 [2025-07-21 15:36:26] [INFO] Workflow complete.
+[2025-07-21 16:29:43] [INFO] Starting Gemini-based workflow (using Gemini 2.0 Flash)...
+[2025-07-21 16:29:53] [INFO] [FileIO] Wrote code to src/rollerblades.lua
+[2025-07-21 16:29:59] [ERROR] [LLM] Error calling Gemini API: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+[2025-07-21 16:29:59] [WARNING] [LLM] Failed to review code
+[2025-07-21 16:29:59] [INFO] [Review] -- [STUB] Code review failed. Please review manually.
+[2025-07-21 16:29:59] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 16:29:59] [INFO] [QA] All tests passed (stub)
+[2025-07-21 16:29:59] [INFO] [Deploy] (Stub) Deployed src/rollerblades.lua to Roblox.
+[2025-07-21 16:29:59] [INFO] [DevOps] Deployed src/rollerblades.lua (stub)
+[2025-07-21 16:30:00] [ERROR] [LLM] Error calling Gemini API: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+[2025-07-21 16:30:00] [WARNING] [LLM] Failed to generate code for: Implement MVP version "Skateboard": Add basic queuing: movement, queue to join game
+[2025-07-21 16:30:00] [INFO] [FileIO] Wrote code to src/skateboard.lua
+[2025-07-21 16:30:01] [ERROR] [LLM] Error calling Gemini API: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+[2025-07-21 16:30:01] [WARNING] [LLM] Failed to review code
+[2025-07-21 16:30:01] [INFO] [Review] -- [STUB] Code review failed. Please review manually.
+[2025-07-21 16:30:01] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 16:30:01] [INFO] [QA] All tests passed (stub)
+[2025-07-21 16:30:01] [INFO] [Deploy] (Stub) Deployed src/skateboard.lua to Roblox.
+[2025-07-21 16:30:01] [INFO] [DevOps] Deployed src/skateboard.lua (stub)
+[2025-07-21 16:30:18] [INFO] [FileIO] Wrote code to src/bicycle.lua
+[2025-07-21 16:30:19] [ERROR] [LLM] Error calling Gemini API: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+[2025-07-21 16:30:19] [WARNING] [LLM] Failed to review code
+[2025-07-21 16:30:19] [INFO] [Review] -- [STUB] Code review failed. Please review manually.
+[2025-07-21 16:30:19] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 16:30:19] [INFO] [QA] All tests passed (stub)
+[2025-07-21 16:30:19] [INFO] [Deploy] (Stub) Deployed src/bicycle.lua to Roblox.
+[2025-07-21 16:30:19] [INFO] [DevOps] Deployed src/bicycle.lua (stub)
+[2025-07-21 16:30:40] [INFO] [FileIO] Wrote code to src/motorcycle.lua
+[2025-07-21 16:30:52] [INFO] [Review] Okay, here's a detailed code review of the provided Roblox Lua code, covering the aspects you requested:
+
+**Code Quality and Style:**
+
+*   **Excellent Modularity:** The division of responsibilities into modules (`MotorcycleController`, `RoundManager`, `ScoreManager`, `UIManager`) is a huge plus.  This promotes code reusability, maintainability, and readability.  The `require()` statements at the top clearly indicate the dependencies.
+*   **Good Commenting:** The comments are descriptive and explain the purpose of each section, function, and even specific lines of code where necessary. This makes the code much easier to understand.
+*   **Clear Variable Naming:**  Variables are named descriptively (e.g., `motorcycleModelName`, `scorePerRound`, `startingPoint`), making the code's intent clear.
+*   **Consistent Style:** The code generally follows a consistent style in terms of indentation, spacing, and capitalization.
+*   **Explicit Error Handling:** The `error()` calls when required parts aren't found are good for debugging. The `setupGame` function returning a boolean success/failure indicator is also helpful.
+*   **Use of Services:** Correctly uses `game:GetService()` for standard Roblox services.
+*   **Local Script Placement:**  Correctly identifies the need for a LocalScript for UI manipulation.
+
+**Potential Bugs or Issues:**
+
+*   **`wait(15)` Placeholder:** The most significant issue is the `wait(15)` in the `gameLoop`. This is a *major* problem because it means the round will always end after 15 seconds, regardless of whether the player reaches the end point.  This needs to be replaced with a proper game condition check.  If the character never reaches the end point or even quits before 15 seconds the Round will end anyway.
+*   **Missing Input Handling in `MotorcycleController`:** The `MotorcycleController.enableControls()` function is a placeholder.  Without actual input handling, the motorcycle won't move. This is the core game mechanic that needs to be implemented.  This is likely the biggest piece of missing functionality.
+*   **Collision Detection Robustness:** The simple `Touched` event might not be robust enough.  If the motorcycle bumps against the end point in a weird way, it might not trigger the event. Consider using `GetTouchingParts()` for more reliable collision detection if needed. This returns a table of parts that are touching a given part.
+*   **Client-Side Vulnerability:** The entire game logic is client-side. This makes it vulnerable to cheating.  A determined player could modify the client code to give themselves infinite score, skip rounds, etc.  For a serious game, *critical* logic (like score validation) needs to be moved to the server using RemoteEvents.
+*   **UI Module Player Check:** UIManager should check if `game.Players.LocalPlayer` exists before trying to use it.
+*   **UIManager canvas:** The UI is created within the PlayerGui, but this code will need to be put into a LocalScript that's in `StarterPlayerScripts` to work properly, that wasn't explicitly stated in the code.
+*   **Motorcycle Setup:** The motorcycle might need some specific physics properties adjusted (density, friction, etc.) to handle properly.  This is highly dependent on the model itself.
+*   **Potential Race Condition:**  There *could* be a very minor race condition where the `connection:Disconnect()` call in `endRound()` happens before the `checkCollision()` function is called.  This is unlikely, but for ultimate safety, you could set a flag `roundActive = false` in `endRound()` and check that flag *before* disconnecting the connection in `checkCollision()`.
+*   **Starting Point and Motorcycle Interaction:** Need to make sure the starting point isn't causing a collision issue where the round instantly ends when the game starts. You might need to temporarily disable collision or move the starting point slightly.
+
+**Performance Considerations:**
+
+*   **`Touched` Event Performance:** While convenient, heavily relying on `Touched` events for complex collision logic can impact performance, especially if there are many parts involved.  For a complex track with lots of interactable elements, consider more efficient collision detection methods.
+*   **Client-Side Physics:**  Client-side physics calculations can be affected by the player's machine's performance.  If the game becomes very physics-intensive, consider offloading some calculations to the server (though this increases complexity).
+*   **UIManager Updates:**  Frequent UI updates can also affect performance.  Optimize the `UIManager` to only update when necessary (e.g., don't update the score every frame if it hasn't changed).
+*   **Motorcycle Complexity:** The complexity of the motorcycle model itself will impact performance.  Try to keep the polygon count reasonable.
+
+**Security Concerns:**
+
+*   **Client-Side Authority:**  As mentioned before, the client has too much authority in this design.  Score, round progression, and game state are all controlled by the client, making it easy to cheat.
+*   **No Input Validation:** The current `MotorcycleController` doesn't validate user inputs.  This means a malicious player could potentially send invalid input data to the server (if there were server interactions) and cause problems.  Even if the game is primarily client-side, input validation is a good practice.
+
+**Suggestions for Improvement:**
+
+1.  **Implement a Proper Round End Condition:** Replace `wait(15)` with a robust condition check.  This could be:
+    *   Check `GetTouchingParts()` in the Heartbeat event for motorcycle at the end point.
+    *   A Timer + End Point check combo (timer as a backup).
+
+2.  **Implement Motorcycle Movement:**  Code the `MotorcycleController.enableControls()` function to handle player input (WASD keys, etc.) and apply forces/torques to the motorcycle.  Consider using `ContextActionService` for better input management. This is the most crucial improvement.  Experiment with different physics constraints and forces to achieve the desired motorcycle handling.
+
+3.  **Move Critical Logic to the Server:** Use RemoteEvents to handle score updates, round progression, and other critical game state changes on the server. This prevents cheating.
+
+4.  **Add Input Validation:**  Validate user inputs in the `MotorcycleController` to prevent malicious input from causing problems.
+
+5.  **Consider Checkpoints:** Add checkpoints along the track. The player must pass through all checkpoints before reaching the end point to complete the round. This makes the game more challenging and engaging.  Could change the `endPoint.Touched` function to an array to check.
+
+6.  **More Robust Collision Detection:**  Use `GetTouchingParts()` periodically for more reliable collision detection, especially if the `Touched` event is proving unreliable.
+
+7.  **Camera Control:** Implement a proper camera system that follows the motorcycle smoothly.
+
+8.  **Game Over Condition:** Add a game over condition (e.g., the player runs out of lives, fails too many rounds).
+
+9.  **Power-Ups:** Add power-ups to the track to enhance gameplay (speed boosts, temporary invincibility, etc.).
+
+10. **Level Design:**  Create interesting and challenging track designs to keep the player engaged.
+
+**Summary:**
+
+The provided code is a good starting point, demonstrating excellent modularity and clear coding practices. The key areas for improvement are implementing the motorcycle movement, replacing the `wait(15)` placeholder with a proper round end condition, and moving critical game logic to the server to prevent cheating.  Addressing these issues will transform this code into a functional and more secure game.
+
+[2025-07-21 16:30:52] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 16:30:52] [INFO] [QA] All tests passed (stub)
+[2025-07-21 16:30:52] [INFO] [Deploy] (Stub) Deployed src/motorcycle.lua to Roblox.
+[2025-07-21 16:30:52] [INFO] [DevOps] Deployed src/motorcycle.lua (stub)
+[2025-07-21 16:31:32] [INFO] [FileIO] Wrote code to src/car.lua
+[2025-07-21 16:31:50] [INFO] [Review] Okay, here's a comprehensive review of the Roblox Lua code you provided, covering code quality, potential issues, performance, security, and suggestions for improvement:
+
+**I. Overall Assessment**
+
+This is a well-structured and comprehensive starting point for a Roblox car game. The use of modules, clear variable naming, and comments makes the code relatively easy to understand and maintain.  The code demonstrates a good understanding of Roblox's API and best practices for creating a multiplayer game.  The inclusion of client-side prediction is excellent.
+
+**II. Code Quality and Style**
+
+*   **Excellent Modularity:** The code is well-modularized. The use of `CarModule`, `NetworkModule`, `UIModule`, `MapModule`, and `PowerupModule` promotes code reuse, maintainability, and separation of concerns.  This is a significant strength.
+
+*   **Consistent Naming:** Variable and function names are descriptive and follow a consistent style (camelCase).
+
+*   **Clear Comments:** Comments are used effectively to explain the purpose of code sections, making it easier to understand the logic.
+
+*   **Good Use of Services:** The code correctly uses Roblox services like `Players`, `ReplicatedStorage`, `Lighting`, and `RunService`.
+
+*   **Modern Practices:** The code uses `PivotTo` for model positioning, which is the current recommended approach.
+
+*   **Readability:** The code is generally easy to read and understand due to its clear structure and comments.
+
+**III. Potential Bugs and Issues**
+
+*   **Spawn Location Logic:**  The spawn location logic in `createCar` prioritizes a spawn location named "SpawnLocation".  If none is found, it attempts to find *any* object named "SpawnLocation" regardless of its type or purpose.  This is problematic. It should ideally find a `SpawnLocation` object or a pre-defined set of spawn points.
+
+*   **Car Naming:**  The naming convention for the car (`player.Name .. "'s Car"`) is susceptible to issues if player names contain special characters that are invalid in Roblox object names.  Consider using `player.DisplayName` or a more robust method of generating unique names.
+
+*   **Client Car AssemblyRoot:** The local script relies on the car model existing at startup. If the player joins the game and the car is created *after* the local script runs, it might not find the car right away. Adding a wait condition until the car exists is needed.
+
+*   **Race Condition on Power-up Activation:**  The `powerupPart.Touched` event is only connected once. If two players touch it simultaneously, both might trigger the `handlePowerupActivation` function. This is likely undesirable. Implement a debounce or more robust power-up management.
+
+*   **Server-Side Car Search on Damage:**  The `handleCarDamage` function iterates through `carInstances` to find the `userId` of the damaged car. This is inefficient. A better approach is to store the `userId` as a property of the car model itself (e.g., `car.UserId = userId`).
+
+*   **Lack of Error Handling on Asset Loading:** The code waits indefinitely for the `BaseCar` model. If it's missing from ReplicatedStorage, the game will hang. Implement a timeout.
+
+*   **Collision Detection Inefficiency:** The `setupCollisionDetection` function connects a `Touched` event to *every* `BasePart` added to the workspace. This is extremely inefficient, especially as the game world grows. It creates a performance bottleneck.  You should limit collision detection to relevant objects only (e.g., by filtering on collision groups or using a spatial query system). Also it will apply damage to any ancestor model when hit with a BasePart, so a better check is to make sure the BasePart is the car model itself.
+
+*   **Power-Up Duration:** The current power-up implementation uses `task.delay`, which might be inaccurate due to yielding. Consider using `os.clock()` for more precise timing of power-up durations, especially in multiplayer games.
+
+*   **Camera "Weld" Script:**  The `RenderStepped` loop updates the camera's CFrame *every frame*. This can lead to micro-stutters if the camera calculations are complex. Consider only updating the camera CFrame when the car's position changes significantly. Also, you could add a CFrame offset to the client rather than a weld to allow user customization and minimize network traffic.
+
+*   **Client-Side Prediction:** The client-side prediction is basic.  More advanced techniques, such as reconciliation (comparing client and server positions and correcting discrepancies), may be needed for a smoother experience in high-latency scenarios.
+
+**IV. Performance Considerations**
+
+*   **Network Updates:** Sending car data every `Heartbeat` could be too frequent, especially with many players. Experiment with increasing `networkUpdateRate` or implementing adaptive network updates based on player proximity.
+
+*   **Collision Detection:** The `DescendantAdded` + `Touched` approach is a *major* performance bottleneck.  Rethink this entirely using collision groups, spatial queries, or a more targeted system.
+
+*   **Client-Side Car Updates:**  Updating *all* remote car positions every frame is costly. Implement a system to prioritize updates based on distance to the local player (level of detail).  Also, the CFrame updates every frame is a costly operation.
+
+*   **Module Requires:** Requiring modules can have a small performance cost the first time they are loaded. This is generally negligible, but be aware of it if you have very complex modules.  Try to keep modules as efficient as possible.
+
+**V. Security Concerns**
+
+*   **Client Authority:** The client sends `controls` directly to the server. This is a significant security vulnerability. Players could easily modify these controls to cheat (e.g., move faster, teleport). *Never* trust the client.
+
+    *   **Server-Side Validation:**  The server must validate all client input. For example, check if the player's movement is within reasonable limits based on their speed and the terrain.
+    *   **Anti-Cheat Measures:** Implement anti-cheat measures to detect and prevent common cheating techniques.
+
+*   **Power-Up Activation:** The client triggers power-up activation. This can be exploited if not handled carefully. The server should ultimately control power-up activation.
+
+*   **Remote Event Abuse:** Limit the number of times a client can fire remote events within a given time period to prevent abuse (e.g., spamming the `CarControlEvent`).
+
+*   **Filtering Enabled:** Ensure that "Filtering Enabled" is enabled in your game settings to prevent exploiters from injecting scripts into the server.
+
+**VI. Suggestions for Improvement**
+
+1.  **Robust Spawn System:** Implement a proper spawn system with `SpawnLocation` objects and logic to prevent players from spawning in the same location. Consider adding spawn protection.
+
+2.  **Server-Side Car Handling:** Abstract away the `carInstances` table into a more robust server-side car management system.
+
+3.  **Collision Handling Overhaul:**  Completely rewrite the collision detection system to avoid using `DescendantAdded` + `Touched` on all BaseParts. Consider using:
+
+    *   **Collision Groups:** Assign different collision groups to different types of objects (e.g., cars, terrain, obstacles).
+    *   **Spatial Queries:** Use `workspace:GetPartsInPart()` or `workspace:GetPartsInRadius()` to find nearby objects for collision detection.
+    *   **Raycasting:** Use raycasting to detect collisions before they happen.
+
+4.  **Advanced Client-Side Prediction and Reconciliation:**  Implement a reconciliation system to compare client-side and server-side car positions. Correct any discrepancies smoothly.
+
+5.  **Server-Side Movement Validation:**  *Critically important*. Validate all client input on the server to prevent cheating.
+
+6.  **Power-Up System Refinement:**
+
+    *   **Server Authority:** The server should handle power-up activation and effects.
+    *   **Debouncing:** Prevent multiple power-up activations by the same player within a short period.
+    *   **Power-Up Balancing:** Carefully balance the effects of different power-ups.
+
+7.  **Camera System Improvements:**
+
+    *   **Customizable Offsets:** Allow players to adjust the camera's offset.
+    *   **Smoothing:** Implement smoothing to the camera's movement to reduce jitter.
+
+8.  **More Advanced Car Physics:** Consider using more advanced car physics techniques, such as:
+
+    *   **Suspension:** Simulate realistic suspension.
+    *   **Tire Friction:** Model tire friction to prevent the car from sliding excessively.
+    *   **Aerodynamics:** Add aerodynamic effects, such as drag and lift.
+
+9.  **Finite State Machine for Car States:** Implement a finite state machine (FSM) to manage different car states, such as "idle", "driving", "drifting", "boosting", and "airborne".
+
+10. **Implement Input Buffer:** Store the input for a short period of time, in case of a slight network latency. This allows the game to use the input without waiting for the server to respond, making the game feel more responsive.
+
+**VII. Revised `setupCollisionDetection` Example (Collision Groups)**
+
+Here's a revised (but still simplified) example of how to use collision groups to improve collision detection performance.  This is still a starting point; a full spatial query implementation would be even better.
+
+```lua
+local PhysicsService = game:GetService("PhysicsService")
+
+-- Create Collision Groups
+PhysicsService:CreateCollisionGroup("Car")
+PhysicsService:CreateCollisionGroup("Terrain")
+
+-- Set Collision Rules (Cars collide with terrain)
+PhysicsService:CollisionGroupSetCollidable("Car", "Terrain", true)
+PhysicsService:CollisionGroupSetCollidable("Car", "Car", false) --Cars do not collide with each other by default.
+PhysicsService:CollisionGroupSetCollidable("Terrain", "Terrain", false)
+
+local function setupCollisionDetection()
+    -- Apply collision groups to the car model when it's created
+    local function setCarCollisionGroup(carModel)
+        for _, part in ipairs(carModel:GetDescendants()) do
+            if part:IsA("BasePart") then
+                PhysicsService:SetPartCollisionGroup(part, "Car")
+            end
+        end
+    end
+
+	-- Apply collision groups to the terrain (assuming it exists at game start)
+	local terrain = workspace:FindFirstChild("Terrain")
+	if terrain then
+		for _, part in ipairs(terrain:GetDescendants()) do
+			if part:IsA("BasePart") then
+				PhysicsService:SetPartCollisionGroup(part, "Terrain")
+			end
+		end
+	end
+
+
+    -- Connect to PlayerAdded to set collision groups when a new car is created
+    Players.PlayerAdded:Connect(function(player)
+        player.CharacterAdded:Connect(function(character)
+            local car = character:FindFirstChild(player.Name .. "'s Car") --Assuming the car is named after the player.
+            if car then
+                setCarCollisionGroup(car)
+				--Setup the hit test
+				for _, part in pairs(car:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.Touched:Connect(function(hit)
+							--Check if the hit is not the car itself.
+							if hit:FindFirstAncestor("Model") then
+								handleCarDamage(car, 25)
+							end
+						end)
+					end
+				end
+            end
+        end)
+    end)
+
+	--Setup initial car's on game start
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player.Character then
+			local car = player.Character:FindFirstChild(player.Name .. "'s Car")
+			if car then
+				setCarCollisionGroup(car)
+				--Setup the hit test
+				for _, part in pairs(car:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.Touched:Connect(function(hit)
+							--Check if the hit is not the car itself.
+							if hit:FindFirstAncestor("Model") then
+								handleCarDamage(car, 25)
+							end
+						end)
+					end
+				end
+			end
+		end
+	end
+end
+```
+
+**VIII. Summary**
+
+This is a very promising foundation for a Roblox car game. By addressing the potential bugs, performance issues, and security concerns outlined above, you can create a more robust, efficient, and enjoyable gaming experience. Prioritize server-side validation, collision optimization, and client-side prediction for the best results.
+
+[2025-07-21 16:31:50] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 16:31:50] [INFO] [QA] All tests passed (stub)
+[2025-07-21 16:31:50] [INFO] [Deploy] (Stub) Deployed src/car.lua to Roblox.
+[2025-07-21 16:31:50] [INFO] [DevOps] Deployed src/car.lua (stub)
+[2025-07-21 16:31:50] [INFO] Workflow complete.

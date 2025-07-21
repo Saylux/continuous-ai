@@ -6,6 +6,9 @@ import json
 from datetime import datetime
 import requests
 from typing import Dict, Any, Optional
+import time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -16,6 +19,17 @@ load_dotenv()
 MEMORY_FILE = "agent_memory.json"
 LOG_FILE = "crew_autopilot.log"
 GEMINI_API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+
+# Configure retry strategy
+retry_strategy = Retry(
+    total=5,  # number of retries
+    backoff_factor=1,  # wait 1, 2, 4, 8, 16 seconds between retries
+    status_forcelist=[429, 500, 502, 503, 504],  # retry on these status codes
+)
+
+# Create session with retry strategy
+session = requests.Session()
+session.mount("https://", HTTPAdapter(max_retries=retry_strategy))
 
 # --- Robust Logging ---
 def log_message(msg, level="INFO"):
@@ -44,59 +58,104 @@ def call_gemini_api(prompt: str) -> Optional[str]:
         }]
     }
 
-    try:
-        response = requests.post(GEMINI_API_ENDPOINT, headers=headers, json=data)
-        response.raise_for_status()
-        result = response.json()
-        
-        # Extract the generated text from the response
-        if 'candidates' in result and result['candidates']:
-            content = result['candidates'][0]['content']
-            if 'parts' in content and content['parts']:
-                return content['parts'][0]['text']
-        
-        return None
-    except Exception as e:
-        log_message(f"[LLM] Error calling Gemini API: {str(e)}", level="ERROR")
-        return None
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            response = session.post(GEMINI_API_ENDPOINT, headers=headers, json=data, timeout=30)
+            
+            # Log the full response for debugging
+            log_message(f"[LLM] Response status: {response.status_code}", level="DEBUG")
+            log_message(f"[LLM] Response headers: {dict(response.headers)}", level="DEBUG")
+            
+            try:
+                response_json = response.json()
+                log_message(f"[LLM] Response body: {json.dumps(response_json, indent=2)}", level="DEBUG")
+            except:
+                log_message(f"[LLM] Raw response: {response.text}", level="DEBUG")
+
+            if response.status_code == 503:
+                wait_time = (attempt + 1) * 2  # Progressive backoff: 2, 4, 6, 8, 10 seconds
+                log_message(f"[LLM] Service unavailable (503). Attempt {attempt + 1}/{max_retries}. Waiting {wait_time}s...", level="WARNING")
+                time.sleep(wait_time)
+                continue
+
+            response.raise_for_status()
+            result = response.json()
+            
+            # Extract the generated text from the response
+            if 'candidates' in result and result['candidates']:
+                content = result['candidates'][0]['content']
+                if 'parts' in content and content['parts']:
+                    return content['parts'][0]['text']
+            
+            log_message("[LLM] No content in response", level="WARNING")
+            return None
+
+        except requests.exceptions.RequestException as e:
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 2
+                log_message(f"[LLM] API request failed: {str(e)}. Attempt {attempt + 1}/{max_retries}. Waiting {wait_time}s...", level="WARNING")
+                time.sleep(wait_time)
+            else:
+                log_message(f"[LLM] API request failed after {max_retries} attempts: {str(e)}", level="ERROR")
+                return None
+        except Exception as e:
+            log_message(f"[LLM] Unexpected error: {str(e)}", level="ERROR")
+            return None
+
+    return None
 
 def generate_code_with_llm(prompt: str) -> str:
-    code = call_gemini_api(f"""
-    Generate Lua code for Roblox game development task:
-    {prompt}
+    # Try a few times with increasing delays
+    for attempt in range(3):
+        code = call_gemini_api(f"""
+        Generate Lua code for Roblox game development task:
+        {prompt}
+        
+        Requirements:
+        - Use Roblox Lua APIs
+        - Include error handling
+        - Add comments explaining the code
+        - Make it modular and reusable
+        """)
+        
+        if code is not None:
+            return code
+        
+        if attempt < 2:  # Don't sleep on the last attempt
+            wait_time = (attempt + 1) * 5  # 5, 10 seconds
+            log_message(f"[LLM] Code generation failed. Attempt {attempt + 1}/3. Waiting {wait_time}s...", level="WARNING")
+            time.sleep(wait_time)
     
-    Requirements:
-    - Use Roblox Lua APIs
-    - Include error handling
-    - Add comments explaining the code
-    - Make it modular and reusable
-    """)
-    
-    if code is None:
-        log_message(f"[LLM] Failed to generate code for: {prompt}", level="WARNING")
-        return f"-- [STUB] Failed to generate code for: {prompt}\nprint('Hello from stub!')"
-    
-    return code
+    log_message(f"[LLM] Failed to generate code after 3 attempts for: {prompt}", level="WARNING")
+    return f"-- [STUB] Failed to generate code for: {prompt}\nprint('Hello from stub!')"
 
 def review_code_with_llm(code: str) -> str:
-    review = call_gemini_api(f"""
-    Review this Roblox Lua code:
+    # Try a few times with increasing delays
+    for attempt in range(3):
+        review = call_gemini_api(f"""
+        Review this Roblox Lua code:
+        
+        {code}
+        
+        Provide a code review that covers:
+        - Code quality and style
+        - Potential bugs or issues
+        - Performance considerations
+        - Security concerns
+        - Suggestions for improvement
+        """)
+        
+        if review is not None:
+            return review
+        
+        if attempt < 2:  # Don't sleep on the last attempt
+            wait_time = (attempt + 1) * 5  # 5, 10 seconds
+            log_message(f"[LLM] Code review failed. Attempt {attempt + 1}/3. Waiting {wait_time}s...", level="WARNING")
+            time.sleep(wait_time)
     
-    {code}
-    
-    Provide a code review that covers:
-    - Code quality and style
-    - Potential bugs or issues
-    - Performance considerations
-    - Security concerns
-    - Suggestions for improvement
-    """)
-    
-    if review is None:
-        log_message("[LLM] Failed to review code", level="WARNING")
-        return "-- [STUB] Code review failed. Please review manually."
-    
-    return review
+    log_message("[LLM] Failed to review code after 3 attempts", level="WARNING")
+    return "-- [STUB] Code review failed. Please review manually."
 
 # --- File/Process Integration ---
 def write_code_file(filename: str, code: str) -> str:
