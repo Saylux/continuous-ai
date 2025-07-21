@@ -97,8 +97,52 @@ def read_code_file(filename):
     logging.info(f"[FileIO] Read code from {filename}")
     return code
 
-# --- Real Agent Behaviors ---
-def agent_behavior(agent, description):
+# --- Simple Workflow Engine for Multi-Step Tasks ---
+class WorkflowTask:
+    def __init__(self, description, agent_chain):
+        self.description = description
+        self.agent_chain = agent_chain  # List of (agent, function)
+        self.result = None
+
+    def run(self):
+        input_data = None
+        for agent, func in self.agent_chain:
+            logging.info(f"[Workflow] {agent.role} executing: {self.description}")
+            input_data = func(agent, self.description, input_data)
+        self.result = input_data
+        return self.result
+
+# --- Real Agent Behaviors (now accept input_data for chaining) ---
+def agent_behavior(agent, description, input_data=None):
+    # Route based on agent role and task description
+    if agent.role == "Gameplay Engineering":
+        if "Implement MVP version" in description:
+            code = generate_code_with_llm(description)
+            filename = f"src/{description.split('"')[1].replace(' ', '_').lower()}.lua"
+            write_code_file(filename, code)
+            return filename  # Pass filename to next agent
+    if agent.role == "Code Review":
+        if input_data and os.path.exists(input_data):
+            code = read_code_file(input_data)
+            review = review_code_with_llm(code)
+            logging.info(f"[Code Review] {review}")
+            return input_data  # Pass filename to next agent
+    if agent.role == "Quality Assurance":
+        if input_data and os.path.exists(input_data):
+            # Simulate running tests on the file
+            result = run_test_runner()
+            logging.info(f"[QA] Test result for {input_data}: {result}")
+            return input_data  # Pass filename to next agent
+    if agent.role == "DevOps":
+        if input_data and os.path.exists(input_data):
+            # Simulate deployment
+            logging.info(f"[DevOps] Deploying {input_data} (stub)")
+            return f"Deployed {input_data}"
+    # Fallback to previous behavior
+    return agent_behavior_single(agent, description)
+
+# --- Single-step agent behavior for non-chained tasks ---
+def agent_behavior_single(agent, description):
     # Route based on agent role and task description
     if agent.role == "Automation":
         if "Selene" in description:
@@ -188,20 +232,32 @@ def create_agents():
         agents[name] = Agent(name=name, role=role, goal=goal)
     return agents
 
-# --- Main Orchestration ---
+# --- Main Orchestration (with workflow engine) ---
 def main():
     doc_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../docs'))
     tasks_info = parse_all_tasks(doc_root)
     agents = create_agents()
     tasks = []
+    # Example: For each MVP implementation, chain codegen -> review -> test -> deploy
     for agent_name, description in tasks_info:
-        agent = agents.get(agent_name)
-        if agent:
-            def real_task(desc=description, agent=agent):
-                return agent_behavior(agent, desc)
-            tasks.append(Task(description=description, agent=agent, function=real_task))
+        if agent_name == "Gameplay Engineer" and "Implement MVP version" in description:
+            agent_chain = [
+                (agents["Gameplay Engineer"], agent_behavior),
+                (agents["Code Reviewer"], agent_behavior),
+                (agents["QA Engineer"], agent_behavior),
+                (agents["DevOps Engineer"], agent_behavior),
+            ]
+            workflow_task = WorkflowTask(description, agent_chain)
+            def workflow_func(desc=description, wf=workflow_task):
+                return wf.run()
+            tasks.append(Task(description=description, agent=agents["Gameplay Engineer"], function=workflow_func))
         else:
-            logging.warning(f"No agent found for role: {agent_name} (task: {description})")
+            def real_task(desc=description, agent=agents.get(agent_name)):
+                return agent_behavior_single(agent, desc)
+            if agent_name in agents:
+                tasks.append(Task(description=description, agent=agents[agent_name], function=real_task))
+            else:
+                logging.warning(f"No agent found for role: {agent_name} (task: {description})")
     crew = Crew(agents=list(agents.values()), tasks=tasks)
     crew.kickoff()
 
