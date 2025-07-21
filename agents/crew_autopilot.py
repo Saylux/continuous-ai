@@ -5,6 +5,8 @@ from crewai import Agent, Task, Crew
 from dotenv import load_dotenv
 # from openai import OpenAI  # Uncomment and configure if using OpenAI or similar LLM
 import json
+import argparse
+from datetime import datetime
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -16,7 +18,17 @@ MEMORY_FILE = "agent_memory.json"
 GAME_REPO_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../game'))
 GAME_TESTS_PATH = os.path.join(GAME_REPO_PATH, 'tests')
 
-# --- Persistent Agent Memory ---
+LOG_FILE = "crew_autopilot.log"
+
+# --- Robust Logging ---
+def log_message(msg, level="INFO"):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    line = f"[{timestamp}] [{level}] {msg}"
+    print(line)
+    with open(LOG_FILE, 'a', encoding='utf-8') as f:
+        f.write(line + "\n")
+
+# --- Enhanced Agent Memory ---
 def log_agent_memory(entry):
     memory = []
     if os.path.exists(MEMORY_FILE):
@@ -25,9 +37,36 @@ def log_agent_memory(entry):
                 memory = json.load(f)
             except Exception:
                 memory = []
+    entry["timestamp"] = datetime.now().isoformat()
     memory.append(entry)
     with open(MEMORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(memory, f, indent=2)
+
+# --- Utility: View Last N Memory Entries ---
+def print_memory_summary(n=10):
+    if not os.path.exists(MEMORY_FILE):
+        print("No agent memory found.")
+        return
+    with open(MEMORY_FILE, 'r', encoding='utf-8') as f:
+        memory = json.load(f)
+    print(f"--- Last {n} Agent Memory Entries ---")
+    for entry in memory[-n:]:
+        print(json.dumps(entry, indent=2))
+
+# --- Utility: Reset Memory Log ---
+def reset_memory():
+    if os.path.exists(MEMORY_FILE):
+        os.remove(MEMORY_FILE)
+    if os.path.exists(LOG_FILE):
+        os.remove(LOG_FILE)
+    print("Agent memory and log reset.")
+
+# --- LLM Config Stub ---
+LLM_CONFIG = {
+    "provider": "openai",  # or "local"
+    "api_key": os.getenv("OPENAI_API_KEY", ""),
+    # Add more config as needed
+}
 
 # --- Doc Parsing: Extract actionable tasks from docs ---
 def parse_all_tasks(doc_root):
@@ -264,13 +303,22 @@ def create_agents():
         agents[name] = Agent(name=name, role=role, goal=goal)
     return agents
 
-# --- Main Orchestration (with workflow engine) ---
+# --- Main Orchestration (with argparse for status/reset) ---
 def main():
+    parser = argparse.ArgumentParser(description="CrewAI Autopilot for Roblox Family Feud")
+    parser.add_argument("command", nargs="?", default="run", choices=["run", "status", "reset"], help="Command to run: run, status, reset")
+    args = parser.parse_args()
+    if args.command == "status":
+        print_memory_summary(10)
+        return
+    if args.command == "reset":
+        reset_memory()
+        return
+    # Default: run the pipeline
     doc_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../docs'))
     tasks_info = parse_all_tasks(doc_root)
     agents = create_agents()
     tasks = []
-    # Example: For each MVP implementation, chain codegen -> review -> test -> deploy
     for agent_name, description in tasks_info:
         if agent_name == "Gameplay Engineer" and "Implement MVP version" in description:
             agent_chain = [
@@ -281,15 +329,31 @@ def main():
             ]
             workflow_task = WorkflowTask(description, agent_chain)
             def workflow_func(desc=description, wf=workflow_task):
-                return wf.run()
+                try:
+                    result = wf.run()
+                    log_agent_memory({"type": "workflow", "desc": desc, "result": result})
+                    log_message(f"Workflow completed: {desc}")
+                    return result
+                except Exception as e:
+                    log_agent_memory({"type": "workflow_error", "desc": desc, "error": str(e)})
+                    log_message(f"Workflow error: {desc} - {e}", level="ERROR")
+                    return f"Error: {e}"
             tasks.append(Task(description=description, agent=agents["Gameplay Engineer"], function=workflow_func))
         else:
             def real_task(desc=description, agent=agents.get(agent_name)):
-                return agent_behavior_single(agent, desc)
+                try:
+                    result = agent_behavior_single(agent, desc)
+                    log_agent_memory({"type": "task", "agent": agent_name, "desc": desc, "result": result})
+                    log_message(f"Task completed: {desc}")
+                    return result
+                except Exception as e:
+                    log_agent_memory({"type": "task_error", "agent": agent_name, "desc": desc, "error": str(e)})
+                    log_message(f"Task error: {desc} - {e}", level="ERROR")
+                    return f"Error: {e}"
             if agent_name in agents:
                 tasks.append(Task(description=description, agent=agents[agent_name], function=real_task))
             else:
-                logging.warning(f"No agent found for role: {agent_name} (task: {description})")
+                log_message(f"No agent found for role: {agent_name} (task: {description})", level="WARNING")
     crew = Crew(agents=list(agents.values()), tasks=tasks)
     crew.kickoff()
 
