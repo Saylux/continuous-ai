@@ -4,12 +4,30 @@ import subprocess
 from crewai import Agent, Task, Crew
 from dotenv import load_dotenv
 # from openai import OpenAI  # Uncomment and configure if using OpenAI or similar LLM
+import json
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 # Load environment variables
 load_dotenv()
+
+MEMORY_FILE = "agent_memory.json"
+GAME_REPO_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../game'))
+GAME_TESTS_PATH = os.path.join(GAME_REPO_PATH, 'tests')
+
+# --- Persistent Agent Memory ---
+def log_agent_memory(entry):
+    memory = []
+    if os.path.exists(MEMORY_FILE):
+        with open(MEMORY_FILE, 'r', encoding='utf-8') as f:
+            try:
+                memory = json.load(f)
+            except Exception:
+                memory = []
+    memory.append(entry)
+    with open(MEMORY_FILE, 'w', encoding='utf-8') as f:
+        json.dump(memory, f, indent=2)
 
 # --- Doc Parsing: Extract actionable tasks from docs ---
 def parse_all_tasks(doc_root):
@@ -79,23 +97,36 @@ def run_linter(tool, path):
         logging.error(f"[{tool}] Error: {e.stderr}")
         return e.stderr
 
-def run_test_runner():
-    # Example: run pytest or TestEZ (stub)
-    logging.info("[TestRunner] Running tests (stub)...")
-    # TODO: Integrate with real test runner
-    return "All tests passed (stub)"
+# --- Real Test Runner Integration ---
+def run_testez_tests():
+    if not os.path.exists(GAME_REPO_PATH):
+        logging.warning(f"[TestRunner] Game repo not found at {GAME_REPO_PATH}")
+        return "Game repo not found."
+    if not os.path.exists(GAME_TESTS_PATH) or not os.listdir(GAME_TESTS_PATH):
+        logging.info(f"[TestRunner] No tests found in {GAME_TESTS_PATH}")
+        return "No tests to run."
+    try:
+        result = subprocess.run(["testez-companion-cli"], cwd=GAME_REPO_PATH, capture_output=True, text=True, check=True)
+        logging.info(f"[TestEZ] Output: {result.stdout}")
+        log_agent_memory({"type": "test_run", "result": result.stdout})
+        return result.stdout
+    except FileNotFoundError:
+        logging.error("[TestEZ] testez-companion-cli not found. Please install it.")
+        return "TestEZ CLI not installed."
+    except subprocess.CalledProcessError as e:
+        logging.error(f"[TestEZ] Error: {e.stderr}")
+        log_agent_memory({"type": "test_run", "error": e.stderr})
+        return e.stderr
 
-def write_code_file(filename, code):
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(code)
-    logging.info(f"[FileIO] Wrote code to {filename}")
-    return f"Wrote code to {filename}"
-
-def read_code_file(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
-        code = f.read()
-    logging.info(f"[FileIO] Read code from {filename}")
-    return code
+# --- Real Deployment Logic (Stub) ---
+def deploy_to_roblox_stub(filename):
+    # TODO: Integrate with Roblox Open Cloud API for real deployment
+    if not os.path.exists(GAME_REPO_PATH):
+        logging.warning(f"[Deploy] Game repo not found at {GAME_REPO_PATH}")
+        return "Game repo not found."
+    logging.info(f"[Deploy] Deploying {filename} to Roblox (stub)")
+    log_agent_memory({"type": "deploy", "file": filename, "status": "stub deployed"})
+    return f"Deployed {filename} (stub)"
 
 # --- Simple Workflow Engine for Multi-Step Tasks ---
 class WorkflowTask:
@@ -112,7 +143,7 @@ class WorkflowTask:
         self.result = input_data
         return self.result
 
-# --- Real Agent Behaviors (now accept input_data for chaining) ---
+# --- Real Agent Behaviors (update QA and DevOps for real test/deploy) ---
 def agent_behavior(agent, description, input_data=None):
     # Route based on agent role and task description
     if agent.role == "Gameplay Engineering":
@@ -129,15 +160,16 @@ def agent_behavior(agent, description, input_data=None):
             return input_data  # Pass filename to next agent
     if agent.role == "Quality Assurance":
         if input_data and os.path.exists(input_data):
-            # Simulate running tests on the file
-            result = run_test_runner()
+            # Run real TestEZ tests if available
+            result = run_testez_tests()
             logging.info(f"[QA] Test result for {input_data}: {result}")
+            log_agent_memory({"type": "qa", "file": input_data, "result": result})
             return input_data  # Pass filename to next agent
     if agent.role == "DevOps":
         if input_data and os.path.exists(input_data):
-            # Simulate deployment
-            logging.info(f"[DevOps] Deploying {input_data} (stub)")
-            return f"Deployed {input_data}"
+            # Real deployment (stub)
+            result = deploy_to_roblox_stub(input_data)
+            return result
     # Fallback to previous behavior
     return agent_behavior_single(agent, description)
 
