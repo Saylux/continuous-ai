@@ -1,0 +1,88 @@
+[2025-07-21 12:52:15] [INFO] Starting Gemini-based CrewAI workflow (no CrewAI dependencies)...
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Rollerblades": Player can walk from A to B
+[2025-07-21 12:52:15] [INFO] [FileIO] Wrote code to src/rollerblades.lua
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 12:52:15] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 12:52:15] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 12:52:15] [INFO] [QA] All tests passed (stub)
+[2025-07-21 12:52:15] [INFO] [Deploy] (Stub) Deployed src/rollerblades.lua to Roblox.
+[2025-07-21 12:52:15] [INFO] [DevOps] Deployed src/rollerblades.lua (stub)
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Skateboard": Add basic queuing: movement, queue to join game
+[2025-07-21 12:52:15] [INFO] [FileIO] Wrote code to src/skateboard.lua
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 12:52:15] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 12:52:15] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 12:52:15] [INFO] [QA] All tests passed (stub)
+[2025-07-21 12:52:15] [INFO] [Deploy] (Stub) Deployed src/skateboard.lua to Roblox.
+[2025-07-21 12:52:15] [INFO] [DevOps] Deployed src/skateboard.lua (stub)
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Bicycle": Core game loop, UI stub: start, Q&A, answer, result
+[2025-07-21 12:52:15] [INFO] [FileIO] Wrote code to src/bicycle.lua
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 12:52:15] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 12:52:15] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 12:52:15] [INFO] [QA] All tests passed (stub)
+[2025-07-21 12:52:15] [INFO] [Deploy] (Stub) Deployed src/bicycle.lua to Roblox.
+[2025-07-21 12:52:15] [INFO] [DevOps] Deployed src/bicycle.lua (stub)
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Motorcycle": Add scoring, rounds: core loop, scoring, rounds
+[2025-07-21 12:52:15] [INFO] [FileIO] Wrote code to src/motorcycle.lua
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 12:52:15] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 12:52:15] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 12:52:15] [INFO] [QA] All tests passed (stub)
+[2025-07-21 12:52:15] [INFO] [Deploy] (Stub) Deployed src/motorcycle.lua to Roblox.
+[2025-07-21 12:52:15] [INFO] [DevOps] Deployed src/motorcycle.lua (stub)
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Car": Full game, polish: all features, polish, multiplayer
+[2025-07-21 12:52:15] [INFO] [FileIO] Wrote code to src/car.lua
+[2025-07-21 12:52:15] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 12:52:15] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 12:52:15] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 12:52:15] [INFO] [QA] All tests passed (stub)
+[2025-07-21 12:52:15] [INFO] [Deploy] (Stub) Deployed src/car.lua to Roblox.
+[2025-07-21 12:52:15] [INFO] [DevOps] Deployed src/car.lua (stub)
+[2025-07-21 12:52:15] [INFO] Workflow complete.
+[2025-07-21 13:02:14] [INFO] Starting Gemini-based CrewAI workflow (no CrewAI dependencies)...
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Rollerblades": Player can walk from A to B
+[2025-07-21 13:02:14] [INFO] [FileIO] Wrote code to src/rollerblades.lua
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 13:02:14] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 13:02:14] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 13:02:14] [INFO] [QA] All tests passed (stub)
+[2025-07-21 13:02:14] [INFO] [Deploy] (Stub) Deployed src/rollerblades.lua to Roblox.
+[2025-07-21 13:02:14] [INFO] [DevOps] Deployed src/rollerblades.lua (stub)
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Skateboard": Add basic queuing: movement, queue to join game
+[2025-07-21 13:02:14] [INFO] [FileIO] Wrote code to src/skateboard.lua
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 13:02:14] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 13:02:14] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 13:02:14] [INFO] [QA] All tests passed (stub)
+[2025-07-21 13:02:14] [INFO] [Deploy] (Stub) Deployed src/skateboard.lua to Roblox.
+[2025-07-21 13:02:14] [INFO] [DevOps] Deployed src/skateboard.lua (stub)
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Bicycle": Core game loop, UI stub: start, Q&A, answer, result
+[2025-07-21 13:02:14] [INFO] [FileIO] Wrote code to src/bicycle.lua
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 13:02:14] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 13:02:14] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 13:02:14] [INFO] [QA] All tests passed (stub)
+[2025-07-21 13:02:14] [INFO] [Deploy] (Stub) Deployed src/bicycle.lua to Roblox.
+[2025-07-21 13:02:14] [INFO] [DevOps] Deployed src/bicycle.lua (stub)
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Motorcycle": Add scoring, rounds: core loop, scoring, rounds
+[2025-07-21 13:02:14] [INFO] [FileIO] Wrote code to src/motorcycle.lua
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 13:02:14] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 13:02:14] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 13:02:14] [INFO] [QA] All tests passed (stub)
+[2025-07-21 13:02:14] [INFO] [Deploy] (Stub) Deployed src/motorcycle.lua to Roblox.
+[2025-07-21 13:02:14] [INFO] [DevOps] Deployed src/motorcycle.lua (stub)
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub code for: Implement MVP version "Car": Full game, polish: all features, polish, multiplayer
+[2025-07-21 13:02:14] [INFO] [FileIO] Wrote code to src/car.lua
+[2025-07-21 13:02:14] [WARNING] [LLM] No GEMINI_API_KEY found. Returning stub review.
+[2025-07-21 13:02:14] [INFO] [Review] # [LLM STUB] Review: Code looks fine (stub).
+[2025-07-21 13:02:14] [INFO] [TestRunner] (Stub) All tests passed.
+[2025-07-21 13:02:14] [INFO] [QA] All tests passed (stub)
+[2025-07-21 13:02:14] [INFO] [Deploy] (Stub) Deployed src/car.lua to Roblox.
+[2025-07-21 13:02:14] [INFO] [DevOps] Deployed src/car.lua (stub)
+[2025-07-21 13:02:14] [INFO] Workflow complete.
+[2025-07-21 13:10:06] [INFO] Starting Gemini-based CrewAI workflow (no CrewAI dependencies)...
+[2025-07-21 13:13:30] [INFO] Starting Gemini-based CrewAI workflow (no CrewAI dependencies)...
+[2025-07-21 13:16:25] [INFO] Starting Gemini-based CrewAI workflow (no CrewAI dependencies)...
+[2025-07-21 13:18:41] [INFO] Starting Gemini-based CrewAI workflow (no CrewAI dependencies)...

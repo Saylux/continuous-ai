@@ -30,8 +30,8 @@ def generate_code_with_llm(prompt):
         log_message(f"[LLM] No GEMINI_API_KEY found. Returning stub code for: {prompt}", level="WARNING")
         return f"# [LLM STUB] Code generated for: {prompt}\nprint('Hello from LLM stub!')"
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(prompt)
+    chat = genai.ChatSession(model="models/gemini-pro")
+    response = chat.send_message(prompt)
     return response.text
 
 def review_code_with_llm(code):
@@ -40,8 +40,8 @@ def review_code_with_llm(code):
         log_message(f"[LLM] No GEMINI_API_KEY found. Returning stub review.", level="WARNING")
         return "# [LLM STUB] Review: Code looks fine (stub)."
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(f"Review this code:\n{code}")
+    chat = genai.ChatSession(model="models/gemini-pro")
+    response = chat.send_message(f"Review this code:\n{code}")
     return response.text
 
 # --- File/Process Integration ---

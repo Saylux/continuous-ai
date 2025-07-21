@@ -10,15 +10,15 @@ def run(cmd, shell=False):
         print(f"Command failed: {cmd}")
         sys.exit(result.returncode)
 
-def generate_env_example():
-    example_path = ".env.example"
-    if not os.path.exists(example_path):
-        with open(example_path, "w", encoding="utf-8") as f:
+def generate_env_file():
+    env_path = ".env"
+    if not os.path.exists(env_path):
+        with open(env_path, "w", encoding="utf-8") as f:
             f.write("GEMINI_API_KEY=\n")
-        print("Created .env.example with GEMINI_API_KEY=")
+        print("Created .env with GEMINI_API_KEY=")
 
 def main():
-    generate_env_example()
+    generate_env_file()
     venv_dir = "venv"
     is_windows = platform.system() == "Windows"
 
